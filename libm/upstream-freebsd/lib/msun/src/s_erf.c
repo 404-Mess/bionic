@@ -193,55 +193,6 @@ sb5  =  2.55305040643316442583e+03, /* 0x40A3F219, 0xCEDF3BE6 */
 sb6  =  4.74528541206955367215e+02, /* 0x407DA874, 0xE79FE763 */
 sb7  = -2.24409524465858183362e+01; /* 0xC03670E2, 0x42712D62 */
 
-double
-erf(double x)
-{
-	int32_t hx,ix,i;
-	double R,S,P,Q,s,y,z,r;
-	GET_HIGH_WORD(hx,x);
-	ix = hx&0x7fffffff;
-	if(ix>=0x7ff00000) {		/* erf(nan)=nan */
-	    i = ((u_int32_t)hx>>31)<<1;
-	    return (double)(1-i)+one/x;	/* erf(+-inf)=+-1 */
-	}
-
-	if(ix < 0x3feb0000) {		/* |x|<0.84375 */
-	    if(ix < 0x3e300000) { 	/* |x|<2**-28 */
-	        if (ix < 0x00800000)
-		    return (8*x+efx8*x)/8;	/* avoid spurious underflow */
-		return x + efx*x;
-	    }
-	    z = x*x;
-	    r = pp0+z*(pp1+z*(pp2+z*(pp3+z*pp4)));
-	    s = one+z*(qq1+z*(qq2+z*(qq3+z*(qq4+z*qq5))));
-	    y = r/s;
-	    return x + x*y;
-	}
-	if(ix < 0x3ff40000) {		/* 0.84375 <= |x| < 1.25 */
-	    s = fabs(x)-one;
-	    P = pa0+s*(pa1+s*(pa2+s*(pa3+s*(pa4+s*(pa5+s*pa6)))));
-	    Q = one+s*(qa1+s*(qa2+s*(qa3+s*(qa4+s*(qa5+s*qa6)))));
-	    if(hx>=0) return erx + P/Q; else return -erx - P/Q;
-	}
-	if (ix >= 0x40180000) {		/* inf>|x|>=6 */
-	    if(hx>=0) return one-tiny; else return tiny-one;
-	}
-	x = fabs(x);
- 	s = one/(x*x);
-	if(ix< 0x4006DB6E) {	/* |x| < 1/0.35 */
-	    R=ra0+s*(ra1+s*(ra2+s*(ra3+s*(ra4+s*(ra5+s*(ra6+s*ra7))))));
-	    S=one+s*(sa1+s*(sa2+s*(sa3+s*(sa4+s*(sa5+s*(sa6+s*(sa7+
-		s*sa8)))))));
-	} else {	/* |x| >= 1/0.35 */
-	    R=rb0+s*(rb1+s*(rb2+s*(rb3+s*(rb4+s*(rb5+s*rb6)))));
-	    S=one+s*(sb1+s*(sb2+s*(sb3+s*(sb4+s*(sb5+s*(sb6+s*sb7))))));
-	}
-	z  = x;
-	SET_LOW_WORD(z,0);
-	r  =  __ieee754_exp(-z*z-0.5625)*__ieee754_exp((z-x)*(z+x)+R/S);
-	if(hx>=0) return one-r/x; else return  r/x-one;
-}
-
 #if (LDBL_MANT_DIG == 53)
 __weak_reference(erf, erfl);
 #endif
